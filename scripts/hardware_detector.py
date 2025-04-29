@@ -240,3 +240,106 @@ if '==== MEMORIA_RAM ====' in data:
     ruta_archivo = os.path.join(carpeta, 'mem_ram.json')
     with open(ruta_archivo, 'w', encoding='utf-8') as f:
         json.dump(salida_memoria, f, indent=2, ensure_ascii=False)
+
+# --- SISTEMA DE ALMACENAMIENTO ---
+if '==== SISTEMA_ALMACENAMIENTO ====' in data:
+    almacenamiento = {}
+    discos = []
+    
+    # Parsear información de lsblk
+    lsblk_match = re.search(r'==== lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT ====(.*?)(==== Disco:|==== df -h)', data, re.DOTALL)
+    if lsblk_match:
+        lsblk_output = lsblk_match.group(1)
+        current_disk = {}
+        for line in lsblk_output.splitlines():
+            if line.strip() and not line.startswith('NAME'):
+                parts = line.split()
+                if len(parts) >= 5:
+                    current_disk = {
+                        'nombre': parts[0],
+                        'tamanio': parts[1],
+                        'tipo': parts[2],
+                        'sistema_archivos': parts[3],
+                        'punto_montaje': parts[4] if len(parts) > 4 else ''
+                    }
+                    discos.append(current_disk)
+
+    # Parsear información de cada disco
+    disk_blocks = re.split(r'==== Disco: (\w+) ====', data)
+    for i in range(1, len(disk_blocks), 2):
+        disk_name = disk_blocks[i]
+        disk_info = disk_blocks[i+1]
+        
+        # Encontrar el disco correspondiente en la lista
+        disk = next((d for d in discos if d['nombre'] == disk_name), None)
+        if not disk:
+            disk = {'nombre': disk_name}
+            discos.append(disk)
+        
+        # Parsear información de hdparm
+        hdparm_match = re.search(r'==== hdparm -I /dev/\w+ ====(.*?)==== smartctl', disk_info, re.DOTALL)
+        if hdparm_match and 'No disponible' not in hdparm_match.group(1):
+            hdparm_output = hdparm_match.group(1)
+            for line in hdparm_output.splitlines():
+                if 'Model Number:' in line:
+                    disk['modelo'] = line.split(':', 1)[1].strip()
+                elif 'Serial Number:' in line:
+                    disk['numero_serie'] = line.split(':', 1)[1].strip()
+                elif 'Transport:' in line:
+                    disk['interfaz'] = line.split(':', 1)[1].strip()
+                elif 'Device type:' in line:
+                    disk['tipo_dispositivo'] = line.split(':', 1)[1].strip()
+        
+        # Parsear información de smartctl
+        smart_info_match = re.search(r'==== smartctl -i /dev/\w+ ====(.*?)==== smartctl -H', disk_info, re.DOTALL)
+        if smart_info_match and 'No disponible' not in smart_info_match.group(1):
+            smart_info = smart_info_match.group(1)
+            for line in smart_info.splitlines():
+                if 'Device Model:' in line:
+                    disk['modelo'] = line.split(':', 1)[1].strip()
+                elif 'Serial Number:' in line:
+                    disk['numero_serie'] = line.split(':', 1)[1].strip()
+                elif 'User Capacity:' in line:
+                    disk['capacidad'] = line.split(':', 1)[1].strip()
+                elif 'Rotation Rate:' in line:
+                    disk['velocidad_rotacion'] = line.split(':', 1)[1].strip()
+        
+        # Parsear estado SMART
+        smart_health_match = re.search(r'==== smartctl -H /dev/\w+ ====(.*?)(====|$)', disk_info, re.DOTALL)
+        if smart_health_match and 'No disponible' not in smart_health_match.group(1):
+            smart_health = smart_health_match.group(1)
+            if 'PASSED' in smart_health:
+                disk['estado_smart'] = 'OK'
+            elif 'FAILED' in smart_health:
+                disk['estado_smart'] = 'FALLIDO'
+            else:
+                disk['estado_smart'] = 'DESCONOCIDO'
+    
+    # Parsear información de uso de particiones
+    df_match = re.search(r'==== df -h ====(.*?)$', data, re.DOTALL)
+    if df_match:
+        df_output = df_match.group(1)
+        particiones = []
+        for line in df_output.splitlines():
+            if line.strip() and not line.startswith('Filesystem'):
+                parts = line.split()
+                if len(parts) >= 6:
+                    particion = {
+                        'sistema_archivos': parts[0],
+                        'tamanio': parts[1],
+                        'usado': parts[2],
+                        'disponible': parts[3],
+                        'uso_porcentual': parts[4],
+                        'punto_montaje': parts[5]
+                    }
+                    particiones.append(particion)
+        almacenamiento['particiones'] = particiones
+
+    almacenamiento['discos'] = discos
+    salida_almacenamiento = {'sistema_almacenamiento': almacenamiento}
+    
+    carpeta = 'carac_server'
+    os.makedirs(carpeta, exist_ok=True)
+    ruta_archivo = os.path.join(carpeta, 'sistema_almacenamiento.json')
+    with open(ruta_archivo, 'w', encoding='utf-8') as f:
+        json.dump(salida_almacenamiento, f, indent=2, ensure_ascii=False)
