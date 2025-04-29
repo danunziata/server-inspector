@@ -169,3 +169,74 @@ if '==== GESTION_ENERGETICA ====' in data:
     ruta_archivo = os.path.join(carpeta, 'gestion_energetica.json')
     with open(ruta_archivo, 'w', encoding='utf-8') as f:
         json.dump(salida_gestion, f, indent=2, ensure_ascii=False)
+
+# --- MEMORIA RAM ---
+if '==== MEMORIA_RAM ====' in data:
+    memoria = {}
+    modulos = []
+    
+    # Parsear información de free
+    free_match = re.search(r'==== free -h ====(.*?)==== dmidecode', data, re.DOTALL)
+    if free_match:
+        free_output = free_match.group(1)
+        for line in free_output.splitlines():
+            if 'Mem:' in line:
+                parts = line.split()
+                memoria['total'] = parts[1]
+                memoria['usada'] = parts[2]
+                memoria['libre'] = parts[3]
+                memoria['compartida'] = parts[4]
+                memoria['buff_cache'] = parts[5]
+                memoria['disponible'] = parts[6]
+            elif 'Swap:' in line:
+                parts = line.split()
+                memoria['swap_total'] = parts[1]
+                memoria['swap_usado'] = parts[2]
+                memoria['swap_libre'] = parts[3]
+
+    # Parsear información de dmidecode
+    dmi_match = re.search(r'==== dmidecode -t memory ====(.*?)==== lshw', data, re.DOTALL)
+    if dmi_match:
+        dmi_output = dmi_match.group(1)
+        current_module = {}
+        for line in dmi_output.splitlines():
+            if 'Memory Device' in line:
+                if current_module:
+                    modulos.append(current_module)
+                current_module = {}
+            elif 'Size:' in line and 'No Module Installed' not in line:
+                current_module['capacidad'] = line.split(':')[1].strip()
+            elif 'Type:' in line:
+                current_module['tipo'] = line.split(':')[1].strip()
+            elif 'Speed:' in line:
+                current_module['velocidad'] = line.split(':')[1].strip()
+            elif 'Manufacturer:' in line:
+                current_module['fabricante'] = line.split(':')[1].strip()
+            elif 'Serial Number:' in line:
+                current_module['numero_serie'] = line.split(':')[1].strip()
+            elif 'Locator:' in line:
+                current_module['ubicacion'] = line.split(':')[1].strip()
+        
+        if current_module:
+            modulos.append(current_module)
+
+    # Parsear información de lshw
+    lshw_match = re.search(r'==== lshw -class memory ====(.*?)$', data, re.DOTALL)
+    if lshw_match:
+        lshw_output = lshw_match.group(1)
+        for line in lshw_output.splitlines():
+            if 'description:' in line and 'System Memory' in line:
+                memoria['descripcion'] = line.split(':')[1].strip()
+            elif 'physical id:' in line:
+                memoria['id_fisico'] = line.split(':')[1].strip()
+            elif 'size:' in line:
+                memoria['tamanio_total'] = line.split(':')[1].strip()
+
+    memoria['modulos'] = modulos
+    salida_memoria = {'memoria_ram': memoria}
+    
+    carpeta = 'carac_server'
+    os.makedirs(carpeta, exist_ok=True)
+    ruta_archivo = os.path.join(carpeta, 'mem_ram.json')
+    with open(ruta_archivo, 'w', encoding='utf-8') as f:
+        json.dump(salida_memoria, f, indent=2, ensure_ascii=False)
