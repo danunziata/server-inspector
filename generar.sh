@@ -49,6 +49,8 @@ python3 scripts/sensor_detector.py < tmp/sensores_temperatura_y_energia.txt
 rm -rf tmp
 
 # Cambiar permisos de la carpeta carac_server, para que el usuario pueda borrar la carpeta sin sudo
-sudo chown -R $USER:$USER carac_server
+if [ "$(id -u)" -ne 0 ]; then
+    sudo chown -R $USER:$USER carac_server
+fi
 
 echo "Proceso completado. Los archivos JSON se han generado en la carpeta 'carac_server'."
