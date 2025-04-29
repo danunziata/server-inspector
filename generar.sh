@@ -33,6 +33,18 @@ echo "Obteniendo información de memoria RAM..."
 bash scripts/mem_ram.sh > tmp/mem_ram.txt
 python3 scripts/hardware_detector.py < tmp/mem_ram.txt
 
+echo "Obteniendo información del sistema de almacenamiento..."
+bash scripts/sistema_almacenamiento.sh > tmp/sistema_almacenamiento.txt
+python3 scripts/hardware_detector.py < tmp/sistema_almacenamiento.txt
+
+echo "Obteniendo información complementaria..."
+bash scripts/info_complementaria.sh > tmp/info_complementaria.txt
+python3 scripts/hardware_detector.py < tmp/info_complementaria.txt
+
+echo "Obteniendo información de sensores de temperatura y energía..."
+bash scripts/sensores_temperatura_y_energia.sh > tmp/sensores_temperatura_y_energia.txt
+python3 scripts/sensor_detector.py < tmp/sensores_temperatura_y_energia.txt
+
 # Limpiar archivos temporales
 rm -rf tmp
 
