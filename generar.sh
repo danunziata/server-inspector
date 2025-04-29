@@ -48,4 +48,7 @@ python3 scripts/sensor_detector.py < tmp/sensores_temperatura_y_energia.txt
 # Limpiar archivos temporales
 rm -rf tmp
 
+# Cambiar permisos de la carpeta carac_server, para que el usuario pueda borrar la carpeta sin sudo
+sudo chown -R $USER:$USER carac_server
+
 echo "Proceso completado. Los archivos JSON se han generado en la carpeta 'carac_server'."
