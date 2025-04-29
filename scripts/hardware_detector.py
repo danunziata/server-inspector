@@ -343,3 +343,55 @@ if '==== SISTEMA_ALMACENAMIENTO ====' in data:
     ruta_archivo = os.path.join(carpeta, 'sistema_almacenamiento.json')
     with open(ruta_archivo, 'w', encoding='utf-8') as f:
         json.dump(salida_almacenamiento, f, indent=2, ensure_ascii=False)
+
+# --- INFORMACIÓN COMPLEMENTARIA ---
+if '==== INFO_COMPLEMENTARIA ====' in data:
+    info = {}
+    # Distribución y versión
+    lsb_match = re.search(r'==== lsb_release -a ====(.*?)(====|$)', data, re.DOTALL)
+    if lsb_match and 'No disponible' not in lsb_match.group(1):
+        for line in lsb_match.group(1).splitlines():
+            if 'Description:' in line:
+                info['descripcion'] = line.split(':',1)[1].strip()
+            elif 'Release:' in line:
+                info['version'] = line.split(':',1)[1].strip()
+            elif 'Distributor ID:' in line:
+                info['distribuidor'] = line.split(':',1)[1].strip()
+    # Kernel
+    uname_match = re.search(r'==== uname -a ====(.*?)(====|$)', data, re.DOTALL)
+    if uname_match and 'No disponible' not in uname_match.group(1):
+        info['kernel'] = uname_match.group(1).strip()
+    # Uptime
+    uptime_match = re.search(r'==== uptime ====(.*?)(====|$)', data, re.DOTALL)
+    if uptime_match and 'No disponible' not in uptime_match.group(1):
+        info['uptime'] = uptime_match.group(1).strip()
+    # Estado de tuned
+    tuned_match = re.search(r'==== tuned-adm active ====(.*?)(====|$)', data, re.DOTALL)
+    if tuned_match and 'No disponible' not in tuned_match.group(1):
+        info['tuned'] = tuned_match.group(1).strip()
+    # Hostname, arquitectura, etc.
+    hostctl_match = re.search(r'==== hostnamectl ====(.*?)(====|$)', data, re.DOTALL)
+    if hostctl_match and 'No disponible' not in hostctl_match.group(1):
+        for line in hostctl_match.group(1).splitlines():
+            if 'Static hostname:' in line:
+                info['hostname'] = line.split(':',1)[1].strip()
+            elif 'Icon name:' in line:
+                info['icono'] = line.split(':',1)[1].strip()
+            elif 'Chassis:' in line:
+                info['chasis'] = line.split(':',1)[1].strip()
+            elif 'Machine ID:' in line:
+                info['machine_id'] = line.split(':',1)[1].strip()
+            elif 'Boot ID:' in line:
+                info['boot_id'] = line.split(':',1)[1].strip()
+            elif 'Operating System:' in line:
+                info['os'] = line.split(':',1)[1].strip()
+            elif 'Kernel:' in line:
+                info['kernel_hostnamectl'] = line.split(':',1)[1].strip()
+            elif 'Architecture:' in line:
+                info['arquitectura'] = line.split(':',1)[1].strip()
+    salida_info = {'info_complementaria': info}
+    carpeta = 'carac_server'
+    os.makedirs(carpeta, exist_ok=True)
+    ruta_archivo = os.path.join(carpeta, 'info_complementaria.json')
+    with open(ruta_archivo, 'w', encoding='utf-8') as f:
+        json.dump(salida_info, f, indent=2, ensure_ascii=False)
