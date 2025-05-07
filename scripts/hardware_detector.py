@@ -230,7 +230,7 @@ if '==== MEMORIA_RAM ====' in data:
             elif 'physical id:' in line:
                 memoria['id_fisico'] = line.split(':')[1].strip()
             elif 'size:' in line:
-                memoria['tamanio_total'] = line.split(':')[1].strip()
+                memoria['tamaño_total'] = line.split(':')[1].strip()
 
     memoria['modulos'] = modulos
     salida_memoria = {'memoria_ram': memoria}
@@ -254,10 +254,14 @@ if '==== SISTEMA_ALMACENAMIENTO ====' in data:
         for line in lsblk_output.splitlines():
             if line.strip() and not line.startswith('NAME'):
                 parts = line.split()
+                # Eliminar simbolos para que no se impriman
+                if parts[0].startswith('├─') or parts[0].startswith('└─'):
+                    parts[0] = parts[0][2:]     # Imprime a partir del indice 2
+
                 if len(parts) >= 5:
                     current_disk = {
                         'nombre': parts[0],
-                        'tamanio': parts[1],
+                        'tamaño': parts[1],
                         'tipo': parts[2],
                         'sistema_archivos': parts[3],
                         'punto_montaje': parts[4] if len(parts) > 4 else ''
@@ -326,7 +330,7 @@ if '==== SISTEMA_ALMACENAMIENTO ====' in data:
                 if len(parts) >= 6:
                     particion = {
                         'sistema_archivos': parts[0],
-                        'tamanio': parts[1],
+                        'tamaño': parts[1],
                         'usado': parts[2],
                         'disponible': parts[3],
                         'uso_porcentual': parts[4],
