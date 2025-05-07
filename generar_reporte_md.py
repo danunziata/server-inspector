@@ -18,12 +18,17 @@ def formatea_dict(dic, indent=0):
             md += ' ' * indent + f'- **{clave}**:\n'
             md += formatea_dict(v, indent + 2)
         elif isinstance(v, list):
-            md += ' ' * indent + f'- **{clave}**:\n'
-            for i, item in enumerate(v):
-                if isinstance(item, dict):
-                    md += ' ' * (indent + 2) + f'- {formatea_dict(item, indent + 4)}'
-                else:
-                    md += ' ' * (indent + 2) + f'- {item}\n'
+            # Si el campo es flags, lo imprime separado por comas, si no, lo hace en items
+            if k == "flags":
+                valores = ', '.join(str(item) for item in v)
+                md += ' ' * indent + f'- **{clave}**: {valores}\n'
+            else:
+                md += ' ' * indent + f'- **{clave}**:\n'
+                for i, item in enumerate(v):
+                    if isinstance(item, dict):
+                        md += ' ' * (indent + 2) + f'- {formatea_dict(item, indent + 4)}'
+                    else:
+                        md += ' ' * (indent + 2) + f'- {item}\n'
         else:
             md += ' ' * indent + f'- **{clave}**: {v}\n'
     return md
