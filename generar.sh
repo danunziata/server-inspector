@@ -54,3 +54,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 echo "Proceso completado. Los archivos JSON se han generado en la carpeta 'carac_server'."
+
+python3 generar_reporte_md.py
+
+echo "Reporte generado en reporte.md"
