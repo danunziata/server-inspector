@@ -2,6 +2,11 @@
 carac_server/
 reporte.md
 
+# Otros
+plan_implementacion.md
+paths.txt
+notas.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
