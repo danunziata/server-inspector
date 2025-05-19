@@ -2,6 +2,22 @@
 carac_server/
 reporte.md
 
+# Generado por detect_sensors.sh
+profiles/
+sensors_report.txt
+report_cpu.txt
+report_full.txt
+set_profile.sh
+config.txt.recommended
+
+# Generado por env.detect.py
+paths.detected.sh
+
+# Otros
+plan_implementacion.md
+paths.txt
+notas.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

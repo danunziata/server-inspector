@@ -12,15 +12,34 @@ server-inspector is a lightweight system profiling tool designed to collect and 
    ```
 2. Da permisos de ejecución a los scripts:
    ```bash
-   chmod +x generar.sh scripts/*.sh
+   chmod +x generar.sh verificar_dependencias.sh descubrir_paths.sh scripts/*.sh
    ```
-3. Ejecuta el script principal:
+
+3. Ejecuta el script para verificar dependencias:
+   ```bash
+   ./verificar_dependencias.sh
+   ```
+   > **Recomendación:** Para obtener información completa, ejecuta con permisos de superusuario:
+   > ```bash
+   > sudo ./verificar_dependencias.sh
+   > ```
+
+4. Ejecuta el script principal:
    ```bash
    ./generar.sh
    ```
    > **Recomendación:** Para obtener información completa, ejecuta con permisos de superusuario:
    > ```bash
    > sudo ./generar.sh
+   > ```
+
+5. Ejecuta el script para detectar los paths de los sensores:
+   ```bash
+   ./descubrir_paths.sh
+   ```
+   > **Recomendación:** Para obtener información completa, ejecuta con permisos de superusuario:
+   > ```bash
+   > sudo ./descubrir_paths.sh
    > ```
 
 ## Herramientas necesarias
